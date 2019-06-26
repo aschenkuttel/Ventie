@@ -10,8 +10,6 @@ extensions = ['engine', 'admin', 'mod', 'listen']
 async def on_ready():
     activity = discord.Activity(type=discord.ActivityType.listening, name="everyone!")
     await bot.change_presence(activity=activity)
-    print("Ready to Vent!")
-
 
 if __name__ == '__main__':
     for extension in extensions:
