@@ -15,5 +15,4 @@ if __name__ == '__main__':
     for extension in extensions:
         bot.load_extension(f"cogs.{extension}")
 
-
 bot.run(TOKEN)

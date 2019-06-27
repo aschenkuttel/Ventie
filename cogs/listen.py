@@ -9,15 +9,21 @@ class Listen(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.PrivateMessageOnly):
-            await ctx.send(error)
+            msg = str(error)
         elif isinstance(error, utils.AlreadyQueued):
-            await ctx.send("Already in queue")
+            msg = "Already in queue"
         elif isinstance(error, utils.NotQueued):
-            await ctx.send("Not in queue")
+            msg = "Not in queue"
         elif isinstance(error, utils.NotQueued):
-            await ctx.send("Already in session")
+            msg = "Already in session"
+        elif isinstance(error, utils.NoSession):
+            msg = "You're currently in no session"
+        elif isinstance(error, utils.NoMod):
+            msg = "Command only invokable by mods"
         else:
-            await ctx.send(error)
+            msg = str(error)
+        embed = utils.embed_error(msg)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
