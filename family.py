@@ -1,4 +1,3 @@
-import utils
 import datetime
 
 
@@ -7,19 +6,22 @@ class Queue:
         self._ventie = []
         self._venter = []
 
+    def __contains__(self, item):
+        cache = [u.id for u in self._ventie + self._venter]
+        return item in cache
+
     def add_user(self, user, ventie):
-        if user in self._venter or user in self._ventie:
-            raise utils.AlreadyQueued
         queue = self._ventie if ventie else self._venter
         queue.append(user)
 
     def remove_user(self, user):
-        if user in self._ventie:
-            self._ventie.remove(user)
-        elif user in self._venter:
-            self._venter.remove(user)
+        for anon in self._ventie:
+            if anon.id == user.id:
+                self._ventie.remove(user)
         else:
-            raise utils.NotQueued
+            for anon in self._venter:
+                if anon.id == user.id:
+                    self._venter.remove(user)
 
     def get_pair(self):
         try:
@@ -29,7 +31,6 @@ class Queue:
             self._venter.remove(venter)
             return ventie, venter
         except IndexError:
-            print("called")
             return
 
     @property
@@ -59,20 +60,18 @@ class Session:
         self.venter = venter.id
         self.venter_al = venter.alias
         self.date = datetime.datetime.now()
-        self.args = self.sql_arguments()
 
     @classmethod
     def from_record(cls, pool, record):
 
         self = cls.__new__(cls)
-        self.id = record.id
+        self.id = record['id']
         self._pool = pool
-        self.ventie = record.ventie
-        self.ventie_al = record.ventie_nick
-        self.venter = record.venter
-        self.venter_al = record.venter_nick
-        self.date = datetime.datetime.now()
-        self.args = self.sql_arguments()
+        self.ventie = record['ventie']
+        self.ventie_al = record['ventie_alias']
+        self.venter = record['venter']
+        self.venter_al = record['venter_alias']
+        self.date = record['date']
         return self
 
     def __contains__(self, item):
@@ -87,17 +86,21 @@ class Session:
             nick = self.venter_al
         return user_id, nick
 
-    async def create_id(self):
-        conn = await self._pool.acquire()
-        query = "SELECT DISTINCT id FROM session, infinite ORDER BY DESC"
+    async def create_id(self, conn):
+        query = "SELECT id FROM session UNION SELECT id FROM infinite ORDER BY id DESC"
         data = await conn.fetch(query)
-        self.id = data[0] + 1 if data else 1
-        await self._pool.release(conn)
+        self.id = data[0]['id'] + 1 if data else 1
 
     async def insert(self, conn, table):
-        query = "INSERT INTO {}(id, ventie, big, venter, small, date)" \
+        query = "INSERT INTO {}(id, ventie, ventie_alias, venter, venter_alias, date) " \
                 "VALUES ($1, $2, $3, $4, $5, $6)"
         await conn.execute(query.format(table), *self.args)
+
+    async def setup(self):
+        conn = await self._pool.acquire()
+        await self.create_id(conn)
+        await self.insert(conn, 'session')
+        await self._pool.release(conn)
 
     async def finish(self):
         conn = await self._pool.acquire()
@@ -106,7 +109,8 @@ class Session:
         await conn.execute(query, self.id)
         await self._pool.release(conn)
 
-    def sql_arguments(self):
+    @property
+    def args(self):
         base = [self.id, self.ventie, self.venter_al]
         base.extend([self.venter, self.venter_al, self.date])
         return base

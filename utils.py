@@ -16,15 +16,10 @@ def embed_confirm(msg, title="", status=""):
     return embed
 
 
-def embed_leave(msg):
-    embed = discord.Embed(color=discord.Color.red(), description=msg)
-    embed.set_footer(text="empty text")
-    return embed
-
-
 def embed_intro(participants):
     welcome = "Welcome to your session! Be friendly and whatever blah blah"
-    embed = discord.Embed(title=f"User: {' - '.join([u.alias for u in participants])}", description=welcome)
+    embed = discord.Embed(title=f"User: {' - '.join([u.alias for u in participants])}",
+                          description=welcome)
     footer = "Leave the session with .leave | report your session partner with .report"
     embed.set_footer(text=footer)
     return embed
@@ -32,6 +27,15 @@ def embed_intro(participants):
 
 def embed_error(msg):
     return discord.Embed(color=discord.Color.red(), description=msg)
+
+
+class StillBanned(commands.CheckFailure):
+    def __init__(self, days):
+        self.days = days + 1
+
+
+class NotBanned(commands.CheckFailure):
+    pass
 
 
 class AlreadyQueued(commands.CheckFailure):

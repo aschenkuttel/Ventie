@@ -11,19 +11,28 @@ class Listen(commands.Cog):
         if isinstance(error, commands.PrivateMessageOnly):
             msg = str(error)
         elif isinstance(error, utils.AlreadyQueued):
-            msg = "Already in queue"
+            msg = "you're already in queue"
         elif isinstance(error, utils.NotQueued):
-            msg = "Not in queue"
-        elif isinstance(error, utils.NotQueued):
-            msg = "Already in session"
+            msg = "you're currently not in queue"
+        elif isinstance(error, utils.ActiveSession):
+            msg = "you're already in an active session"
         elif isinstance(error, utils.NoSession):
-            msg = "You're currently in no session"
+            msg = "you're currently in no session"
         elif isinstance(error, utils.NoMod):
-            msg = "Command only invokable by mods"
+            msg = "command only invokable by mods"
+        elif isinstance(error, utils.StillBanned):
+            s = "s" if error.days > 1 else ""
+            msg = f"still banned for {error.days} day{s}"
+        elif isinstance(error, utils.NotBanned):
+            msg = "user is not banned"
         else:
             msg = str(error)
         embed = utils.embed_error(msg)
         await ctx.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_error(self, error):
+        print(error)
 
 
 def setup(bot):
