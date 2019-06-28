@@ -9,7 +9,7 @@ class Listen(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.PrivateMessageOnly):
-            msg = str(error)
+            msg = "commands only invokable in private message"
         elif isinstance(error, utils.AlreadyQueued):
             msg = "you're already in queue"
         elif isinstance(error, utils.NotQueued):
@@ -26,13 +26,9 @@ class Listen(commands.Cog):
         elif isinstance(error, utils.NotBanned):
             msg = "user is not banned"
         else:
-            msg = str(error)
+            return
         embed = utils.embed_error(msg)
         await ctx.send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_error(self, error):
-        print(error)
 
 
 def setup(bot):

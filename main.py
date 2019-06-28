@@ -9,7 +9,7 @@ extensions = ['engine', 'admin', 'mod', 'listen']
 
 @bot.event
 async def on_ready():
-    activity = discord.Activity(type=discord.ActivityType.listening, name="everyone!")
+    activity = discord.Activity(type=discord.ActivityType.listening, name="everyone.")
     await bot.change_presence(activity=activity)
 
 

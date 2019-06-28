@@ -2,8 +2,10 @@ from discord.ext import commands
 import random
 import discord
 
-div = ["sleepy", "red", "blue", "yellow"]
-sub = ["Elefant", "Lobster", "Magician", "Carnivore"]
+div = ["sleepy", "red", "blue", "yellow", "young",
+       "little", "good", "early", "calm", "clean"]
+sub = ["Cat", "Lobster", "Magician", "Hero", "President",
+       "Manager", "Tiger", "Eagle", "Star", "Duck"]
 
 
 def random_nick():

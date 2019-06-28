@@ -3,6 +3,7 @@ from family import Queue, Session, Anon
 from discord.ext import commands, tasks
 import datetime
 import asyncpg
+import discord
 import utils
 
 
@@ -68,7 +69,7 @@ class Engine(commands.Cog):
         self.sessions[session.id] = session
         await self.introduction(result)
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(hours=12)
     async def judge(self):
         if self.pool is None:
             return
@@ -80,6 +81,7 @@ class Engine(commands.Cog):
             if record['till'] < date:
                 query = "DELETE FROM blacklist WHERE id = $1"
                 await conn.execute(query, record['id'])
+        await self.pool.release(conn)
 
     @cardinal.before_loop
     async def before_cardinal(self):
@@ -104,10 +106,12 @@ class Engine(commands.Cog):
             self.queue = Queue()
 
     async def load_cache(self):
+
         conn = await self.pool.acquire()
         query = "SELECT * FROM session"
         data = await conn.fetch(query)
         await self.pool.release(conn)
+
         for record in data:
             session = Session.from_record(self.pool, record)
             self.sessions[session.id] = session
@@ -134,7 +138,6 @@ class Engine(commands.Cog):
 
     @commands.command(name="vent", aliases=["listen"])
     async def vent_(self, ctx, alias=None):
-
         session = self.get_session(ctx.author.id)
         if session:
             raise utils.ActiveSession()
@@ -147,17 +150,16 @@ class Engine(commands.Cog):
 
         user = Anon(ctx.author, alias)
         self.queue.add_user(user, status)
-        title = "successfully added to queue!"
+        title = "Successfully added to queue!"
         msg = f"**Nickname:** {alias}"
         await ctx.author.send(embed=utils.embed_confirm(msg, title, self.queue.status))
 
     @commands.command(name="leave")
     async def leave_(self, ctx):
-
         if ctx.author.id in self.queue:
             self.queue.remove_user(ctx.author)
             msg = "you left the queue"
-            return await ctx.send(msg)
+            return await ctx.send(embed=utils.embed_confirm(msg))
 
         session = self.get_session(ctx.author.id)
         if session is None:
@@ -170,6 +172,32 @@ class Engine(commands.Cog):
         await user.send(embed=utils.embed_error(msg))
         await session.finish()
         del self.sessions[session.id]
+
+    @commands.command(name="report")
+    async def report_(self, ctx, *, reason: str):
+        session = self.get_session(ctx.author.id)
+        if session is None:
+            conn = await self.pool.acquire()
+            query = "SELECT * FROM infinite WHERE $1 IN (ventie, venter)"
+            data = await conn.fetchrow(query, ctx.author.id)
+            if data is None:
+                return
+            session = Session.from_record(self.pool, data)
+            await self.pool.release(conn)
+
+        user, alias = session.get_partner(ctx.author.id)
+        channel = self.bot.get_channel(594256215119364317)
+        embed = discord.Embed(color=discord.Color.dark_gold())
+        embed.add_field(name="Reported User ID", value=str(user))
+        embed.add_field(name="Alias", value=alias)
+        embed.add_field(name="Reason", value=reason, inline=False)
+        embed.set_footer(text=session.date.strftime("session time | %m/%d/%Y - %H:%M:%S"))
+        if ctx.message.attachments:
+            urls = [a.url for a in ctx.message.attachments[:5]]
+            embed.add_field(name="Attachments:", value='\n'.join(urls))
+        await channel.send(embed=embed)
+        msg = "report successfully submitted"
+        await ctx.channel.send(embed=utils.embed_confirm(msg))
 
 
 def setup(bot):

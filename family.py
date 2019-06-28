@@ -17,11 +17,11 @@ class Queue:
     def remove_user(self, user):
         for anon in self._ventie:
             if anon.id == user.id:
-                self._ventie.remove(user)
+                self._ventie.remove(anon)
         else:
             for anon in self._venter:
                 if anon.id == user.id:
-                    self._venter.remove(user)
+                    self._venter.remove(anon)
 
     def get_pair(self):
         try:
