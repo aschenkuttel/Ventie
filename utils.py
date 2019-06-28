@@ -19,7 +19,11 @@ def embed_confirm(msg, title="", status=""):
 
 
 def embed_intro(participants):
-    welcome = "Welcome to your session! Be friendly and whatever blah blah"
+    welcome = "Welcome to your session. Simply write in this chat and any message besides" \
+              "commands will be relayed to your session partner. Be kind and keep in mind" \
+              "that we're no professional therapists if you got serious problems." \
+              "If you're unlucky and you want to report your session partner please attach" \
+              "some screenshots with the command invokation."
     embed = discord.Embed(title=f"User: {' - '.join([u.alias for u in participants])}",
                           description=welcome)
     footer = "Leave the session with .leave | report your session partner with .report"

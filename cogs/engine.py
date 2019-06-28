@@ -172,6 +172,8 @@ class Engine(commands.Cog):
         await user.send(embed=utils.embed_error(msg))
         await session.finish()
         del self.sessions[session.id]
+        msg = "you left the session"
+        await ctx.send(embed=utils.embed_confirm(msg))
 
     @commands.command(name="report")
     async def report_(self, ctx, *, reason: str):
