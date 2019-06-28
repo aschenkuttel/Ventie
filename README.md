@@ -1,7 +1,7 @@
 # Ventie Bot
-> Simple Vent/Listen Bot written in python using discord.py with blacklist and modsystem.  
-> Commands only invokable via private message. Functionality pretty restricted right now,  
-> going to implement more in the future.  
+> Vent/Listen Bot written in python using discord.py with blacklist and modsystem.  
+> Commands only invokable via private message / Messages relaying via bot.  
+> Functionality pretty restricted right now, going to implement more in the future.  
 > [created for Discord Hack Week 2019](https://blog.discordapp.com/discord-community-hack-week-build-and-create-alongside-us-6b2a7b7bba33)  
 ### Commands:
 * Vent
